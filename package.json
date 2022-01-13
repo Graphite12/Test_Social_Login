@@ -4,7 +4,10 @@
   "description": "test_social_login",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "start2": "node /view/index.html",
+    "nm": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +20,13 @@
   },
   "homepage": "https://github.com/hsh411/Test_Social_Login#readme",
   "dependencies": {
-    "express": "^4.17.2"
+    "axios": "^0.24.0",
+    "dotenv": "^11.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "nodemon": "^2.0.15",
+    "pug": "^3.0.2",
+    "session": "^0.1.0"
   }
 }
