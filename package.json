@@ -1,0 +1,22 @@
+{
+  "name": "test_social_login",
+  "version": "1.0.0",
+  "description": "test_social_login",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsh411/Test_Social_Login.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hsh411/Test_Social_Login/issues"
+  },
+  "homepage": "https://github.com/hsh411/Test_Social_Login#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
+}
