@@ -83,6 +83,11 @@ app.get('/oauth/kakao/login', async (req, res) => {
     console.log(error.message);
   }
 });
+/* 카카오 프로필 */
+app.get();
+
+/* 카카오 로그아웃 */
+app.get();
 
 /* 카카오 인증 연결 끊기 */
 app.get(`/oauth/kakao/unlink`, async (req, res) => {
