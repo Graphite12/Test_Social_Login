@@ -2,3 +2,7 @@
 /node_modules
 #Enviroment File
 .env
+*.pem
+*.pem
+*.key
+*.crt
