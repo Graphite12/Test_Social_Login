@@ -13,8 +13,8 @@ const session = require('express-session');
 // const MemoryStore = require();
 
 const express = require('express');
-const memoryStorage = require('store/storages/memoryStorage');
-const { authMiddleware } = require('./routers/middleware/authenfication');
+
+const { authentication } = require('./routers/middleware/authenfication');
 require('dotenv').config();
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -143,7 +143,7 @@ app.get('/oauth/kakao/login', async (req, res) => {
 });
 
 /* 카카오 프로필 */
-app.get('/oauth/kakao/account_info', authMiddleware, async (req, res) => {
+app.get('/oauth/kakao/account_info', authentication, async (req, res) => {
   let { nickname, profile_image } = req.session.auth_data.kakaos.properties;
   //store.get('kakao_data').properties;
   console.log(nickname, profile_image);
@@ -154,7 +154,7 @@ app.get('/oauth/kakao/account_info', authMiddleware, async (req, res) => {
 });
 
 /* 카카오 로그아웃 */
-app.get('/oauth/kakao/logout', authMiddleware, async (req, res) => {
+app.get('/oauth/kakao/logout', authentication, async (req, res) => {
   const { acc_tkn } = req.session.auth_token;
   console.log(req.session.auth_data);
   try {
@@ -171,20 +171,37 @@ app.get('/oauth/kakao/logout', authMiddleware, async (req, res) => {
 });
 
 /* 카카오 인증 연결 끊기 */
-app.get(`/oauth/kakao/unlink`, authMiddleware, async (req, res) => {
+app.get(`/oauth/kakao/unlink`, authentication, async (req, res) => {
+  const { acc_tkn } = req.session.auth_token;
+  const { kakaos } = req.session.auth_data;
+  //카카오 API에게 삭제 요청 결과를 담아준다.
+  let del_id;
+
   try {
-    const { acc_tkn } = req.session.auth_token;
-    await axios({
+    del_id = await axios({
       method: 'POST',
       url: `https://kapi.kakao.com/v1/user/unlink`,
       headers: {
         Authorization: `Bearer ${acc_tkn}`,
       },
     });
+
+    console.log(del_id);
   } catch (error) {
     res.json(error);
   }
 
+  const { id } = del_id.data;
+  console.log(id);
+
+  //현재 페이지와 응답받은 사용자의 id가 일치한다면..
+  if (kakaos.id === id) {
+    //해당 세션을 지워버림
+    delete req.session.auth_data;
+    delete req.session.auth_token;
+  }
+
+  console.log('삭제', req.session);
   res.status(302).redirect('/');
 });
 
