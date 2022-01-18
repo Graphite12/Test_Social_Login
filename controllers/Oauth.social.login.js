@@ -1,5 +1,6 @@
 const { default: axios } = require('axios');
 const qs = require('qs');
+const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 
 /**
@@ -15,6 +16,14 @@ const kakao_info = {
   client_admin: process.env.KAKAO_ADMIN_KEY,
   redirect_url: `https://localhost:3333/oauth/kakao/login`,
 };
+
+/* 구글 기본 정보 */
+const google_info = {
+  client_id: process.env.GOOGLE_CLIENT_ID,
+  client_secret: process.env.GOOGLE_CLEINT_SECRET,
+  redirect_url: `https://localhost:3333/oauth/google/login`,
+};
+
 /* 카카오 인증토큰  발급 */
 //카카오 리디렉트 주소를 설정 후, get으로 인증 주소를 가져온다.
 let kakao_login = async (req, res) => {
@@ -145,10 +154,54 @@ let kakao_check = (req, res) => {
   res.status(302).redirect(kakao_url);
 };
 
+/**
+ *
+ *                 구글 로그인
+ *
+ */
+
+/* 구글 로그인 */
+const oAuthClient = new OAuth2Client(
+  google_info.client_id,
+  google_info.client_secret,
+  google_info.redirect_url,
+);
+
+const option = {
+  access_type: 'offline',
+  response_type: 'code',
+  prompt: 'consent',
+  scope: [
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+  ],
+};
+
+const authorizeUrl = oAuthClient.generateAuthUrl(option);
+
+// console.log(tokend);
+async function getGoogleAuthURL(code) {
+  const tokend = await oAuthClient.getToken(authorizeUrl);
+  console.log(tokend);
+  //   const { tokens } = await oAuthClient.getToken(code);
+  //   oAuthClient.setCredentials(tokens);
+  //   console.log(oAuthClient);
+  //const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+}
+
+/* 로그인 화면 불러오기 */
+let google_login = async (req, res) => {
+  console.log(oAuthClient);
+  getGoogleAuthURL(authorizeUrl);
+
+  res.status(302).redirect('/');
+};
+
 module.exports = {
   kakao_login,
   kakao_logout,
   kakao_profile,
   kakao_unlink,
   kakao_check,
+  google_login,
 };

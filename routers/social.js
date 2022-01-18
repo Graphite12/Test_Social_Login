@@ -7,7 +7,8 @@ const {
   kakao_logout,
   kakao_profile,
   kakao_unlink,
-} = require('./controllers/Oauth.social.login');
+  google_login,
+} = require('../controllers/Oauth.social.login');
 
 /* 카카오 라우터 */
 router.get('/kakao', kakao_check);
@@ -16,4 +17,6 @@ router.get('/kakao/account_info', authentication, kakao_profile);
 router.get('/kakao/logout', authentication, kakao_logout);
 router.get('/kakao/unlink', authentication, kakao_unlink);
 
+/* 구글 라우터 */
+router.get('/google', google_login);
 module.exports = router;

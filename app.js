@@ -9,6 +9,7 @@ const cors = require('cors');
 const fs = require('fs');
 const session = require('express-session');
 const express = require('express');
+const main = require('./routers/index');
 const social = require('./routers/social');
 require('dotenv').config();
 
@@ -64,24 +65,8 @@ app.use(
 );
 
 /* Router */
-//app.get('/oauth/kakao/unlink')
-app.get('/', (req, res) => {
-  // res.send("Root")
-  console.log(req.session);
-  res.render('index');
-});
-
+app.use(main);
 app.use('/oauth/', social);
-
-/* 소셜로그인 구현 */
-// switch (key) {
-//   case value:
-
-//     break;
-
-//   default:
-//     break;
-// }
 
 //Openssl을 이용한 인증서
 const sslOption = {
