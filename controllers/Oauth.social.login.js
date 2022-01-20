@@ -60,7 +60,7 @@ let kakao_login = async (req, res) => {
     res.json(error);
   }
 
-  req.session.auth_token = { ['acc_tkn']: token.data.access_token };
+  req.session.auth_token = { ['kakao_acc_tkn']: token.data.access_token };
   console.log(req.session.auth_data);
   //로컬 스토리지 비슷한 기능을 store라이브러리를 통해 사용가능
   // store.set('testKkoTk', testKkoTk);
@@ -69,11 +69,12 @@ let kakao_login = async (req, res) => {
   let user;
   // let usertkn = store.get('testKkoTk');
   try {
+    const acctkn = req.session.auth_data.kakao_acc_tkn;
     user = await axios({
       method: 'GET',
       url: 'https://kapi.kakao.com/v2/user/me',
       headers: {
-        Authorization: `Bearer ${token.data.access_token}`,
+        Authorization: `Bearer ${acctkn}`,
       },
     });
 
@@ -191,7 +192,7 @@ let google_check = (req, res) => {
 /* 로그인 화면 불러오기 */
 let google_login = async (req, res) => {
   const { code } = req.query;
-  console.log(code);
+  console.log('코드:' + code);
   let token;
   try {
     token = await axios({
@@ -208,16 +209,46 @@ let google_login = async (req, res) => {
         code: code,
       }),
     });
-    console.log(user.data);
+    console.log('구글토큰:' + token.data.access_token);
 
-    req.session.auth_token = { ['acc_tkn']: token.data.access_token };
-    console.log(req.session.auth_data);
+    req.session.auth_token = { ['google_acc_tkn']: token.data.access_token };
+    console.log('세션:' + req.session.auth_token.google_acc_tkn);
   } catch (error) {
     res.json(error);
   }
 
   try {
-  } catch (error) {}
+    let user;
+    const acctkn = req.session.auth_token.google_acc_tkn;
+    user = await axios({
+      method: 'GET',
+      url: `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${acctkn}`,
+    });
+
+    //const { name, picture, email } = user.data;
+
+    console.log(user.data);
+    console.log(req.session);
+
+    req.session.auth_data = { ['google']: user.data };
+    console.log(req.session.auth_data);
+
+    res.redirect('/');
+  } catch (error) {
+    res.json(error);
+  }
+};
+
+/* 구글 프로필 */
+let google_profile = (req, res) => {
+  let { name, picture, email } = req.session.auth_data.google;
+  //store.get('kakao_data').properties;
+  console.log(nickname, profile_image);
+  res.render('account_profile', {
+    name,
+    picture,
+    email,
+  });
 };
 
 module.exports = {
@@ -228,4 +259,5 @@ module.exports = {
   kakao_check,
   google_login,
   google_check,
+  google_profile,
 };
