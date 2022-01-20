@@ -1,6 +1,7 @@
 const { default: axios } = require('axios');
 const qs = require('qs');
 const { OAuth2Client } = require('google-auth-library');
+const { use } = require('../routers');
 require('dotenv').config();
 
 /**
@@ -25,6 +26,13 @@ const google_info = {
 };
 
 /* 카카오 인증토큰  발급 */
+
+/* 카카오 인증 확인 */
+let kakao_check = (req, res) => {
+  const kakao_url = `https://kauth.kakao.com/oauth/authorize?client_id=${kakao_info.clientID}&redirect_uri=${kakao_info.redirect_url}&response_type=code&scope=profile_nickname,profile_image,account_email`;
+  res.status(302).redirect(kakao_url);
+};
+
 //카카오 리디렉트 주소를 설정 후, get으로 인증 주소를 가져온다.
 let kakao_login = async (req, res) => {
   let token;
@@ -52,7 +60,7 @@ let kakao_login = async (req, res) => {
     res.json(error);
   }
 
-  req.session.auth_token = { ['acc_tkn']: token.data.access_token };
+  req.session.auth_token = { ['kakao_acc_tkn']: token.data.access_token };
   console.log(req.session.auth_data);
   //로컬 스토리지 비슷한 기능을 store라이브러리를 통해 사용가능
   // store.set('testKkoTk', testKkoTk);
@@ -61,11 +69,12 @@ let kakao_login = async (req, res) => {
   let user;
   // let usertkn = store.get('testKkoTk');
   try {
+    const acctkn = req.session.auth_data.kakao_acc_tkn;
     user = await axios({
       method: 'GET',
       url: 'https://kapi.kakao.com/v2/user/me',
       headers: {
-        Authorization: `Bearer ${token.data.access_token}`,
+        Authorization: `Bearer ${acctkn}`,
       },
     });
 
@@ -148,19 +157,13 @@ let kakao_unlink = async (req, res) => {
   res.status(302).redirect('/');
 };
 
-/* 카카오 인증 확인 */
-let kakao_check = (req, res) => {
-  const kakao_url = `https://kauth.kakao.com/oauth/authorize?client_id=${kakao_info.clientID}&redirect_uri=${kakao_info.redirect_url}&response_type=code&scope=profile_nickname,profile_image,account_email`;
-  res.status(302).redirect(kakao_url);
-};
-
 /**
  *
  *                 구글 로그인
  *
  */
 
-/* 구글 로그인 */
+// /* 구글 로그인 */
 const oAuthClient = new OAuth2Client(
   google_info.client_id,
   google_info.client_secret,
@@ -171,30 +174,81 @@ const option = {
   access_type: 'offline',
   response_type: 'code',
   prompt: 'consent',
+  include_granted_scopes: true,
+  state: 'google-Oauth value',
   scope: [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
   ],
 };
 
-const authorizeUrl = oAuthClient.generateAuthUrl(option);
-
-// console.log(tokend);
-async function getGoogleAuthURL(code) {
-  const tokend = await oAuthClient.getToken(authorizeUrl);
-  console.log(tokend);
-  //   const { tokens } = await oAuthClient.getToken(code);
-  //   oAuthClient.setCredentials(tokens);
-  //   console.log(oAuthClient);
-  //const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-}
+// /* 구글 인증 */
+let google_check = (req, res) => {
+  const authorizeUrl = oAuthClient.generateAuthUrl(option);
+  console.log(authorizeUrl);
+  res.status(302).redirect(authorizeUrl);
+};
 
 /* 로그인 화면 불러오기 */
 let google_login = async (req, res) => {
-  console.log(oAuthClient);
-  getGoogleAuthURL(authorizeUrl);
+  const { code } = req.query;
+  console.log('코드:' + code);
+  let token;
+  try {
+    token = await axios({
+      method: 'POST',
+      url: `https://oauth2.googleapis.com/token`,
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      data: qs.stringify({
+        grant_type: 'authorization_code',
+        client_id: google_info.client_id,
+        client_secret: google_info.client_secret,
+        redirectUri: google_info.redirect_url,
+        code: code,
+      }),
+    });
+    console.log('구글토큰:' + token.data.access_token);
 
-  res.status(302).redirect('/');
+    req.session.auth_token = { ['google_acc_tkn']: token.data.access_token };
+    console.log('세션:' + req.session.auth_token.google_acc_tkn);
+  } catch (error) {
+    res.json(error);
+  }
+
+  try {
+    let user;
+    const acctkn = req.session.auth_token.google_acc_tkn;
+    user = await axios({
+      method: 'GET',
+      url: `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${acctkn}`,
+    });
+
+    //const { name, picture, email } = user.data;
+
+    console.log(user.data);
+    console.log(req.session);
+
+    req.session.auth_data = { ['google']: user.data };
+    console.log(req.session.auth_data);
+
+    res.redirect('/');
+  } catch (error) {
+    res.json(error);
+  }
+};
+
+/* 구글 프로필 */
+let google_profile = (req, res) => {
+  let { name, picture, email } = req.session.auth_data.google;
+  //store.get('kakao_data').properties;
+  console.log(nickname, profile_image);
+  res.render('account_profile', {
+    name,
+    picture,
+    email,
+  });
 };
 
 module.exports = {
@@ -204,4 +258,6 @@ module.exports = {
   kakao_unlink,
   kakao_check,
   google_login,
+  google_check,
+  google_profile,
 };
