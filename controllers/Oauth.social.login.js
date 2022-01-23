@@ -288,6 +288,26 @@ let accounts_info = (req, res) => {
   const { auth_data } = req.session;
   const userinfo = Object.keys(auth_data)[0];
   console.log(userinfo);
+  console.log(auth_data[userinfo]);
+
+  switch (userinfo) {
+    case 'google':
+      accounts_info = {
+        picture: auth_data[userinfo].picture,
+        name: auth_data[userinfo].name,
+      };
+      break;
+
+    case 'kakao':
+      break;
+
+    default:
+      break;
+  }
+
+  res.render('account_profile', {
+    accounts_info,
+  });
 };
 
 module.exports = {
