@@ -61,7 +61,7 @@ let kakao_login = async (req, res) => {
   }
 
   req.session.auth_token = { ['kakao_acc_tkn']: token.data.access_token };
-  console.log(req.session.auth_data);
+  console.log(req.session.auth_token.kakao_acc_tkn);
   //로컬 스토리지 비슷한 기능을 store라이브러리를 통해 사용가능
   // store.set('testKkoTk', testKkoTk);
 
@@ -120,6 +120,15 @@ let kakao_logout = async (req, res) => {
   } catch (error) {
     res.json(error);
   }
+
+  if (acc_tkn) {
+    //delete req.session.acc_tkn;
+    req.session.destroy(() => {
+      res.redirect('/');
+    });
+  } else {
+    alert('이미 로그아웃을 하셨습니다.');
+  }
 };
 
 /* 카카오 인증 연결 끊기 */
@@ -149,12 +158,15 @@ let kakao_unlink = async (req, res) => {
   //현재 페이지와 응답받은 사용자의 id가 일치한다면..
   if (kakaos.id === id) {
     //해당 세션을 지워버림
-    delete req.session.auth_data;
-    delete req.session.auth_token;
+    // delete req.session.auth_data;
+    // delete req.session.auth_token;
+    req.session.destroy(() => {
+      res.redirect('/');
+    });
   }
 
-  console.log('삭제', req.session);
-  res.status(302).redirect('/');
+  // console.log('삭제', req.session);
+  // res.status(302).redirect('/');
 };
 
 /**
@@ -251,6 +263,53 @@ let google_profile = (req, res) => {
   });
 };
 
+let google_logout = async (req, res) => {
+  const token = req.session.auth_token.google_acc_tkn;
+  console.log('로그아웃 토큰' + token);
+  const revoke = await axios({
+    method: 'POST',
+    url: `https://oauth2.googleapis.com/revoke?token=${token}`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded',
+    },
+  });
+  console.log(revoke);
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
+  console.log('내가누구' + req.session);
+};
+
+/**
+ * 프로필 공통
+ */
+
+let accounts_info = (req, res) => {
+  const { auth_data } = req.session;
+  const userinfo = Object.keys(auth_data)[0];
+  console.log(userinfo);
+  console.log(auth_data[userinfo]);
+
+  switch (userinfo) {
+    case 'google':
+      accounts_info = {
+        picture: auth_data[userinfo].picture,
+        name: auth_data[userinfo].name,
+      };
+      break;
+
+    case 'kakao':
+      break;
+
+    default:
+      break;
+  }
+
+  res.render('account_profile', {
+    accounts_info,
+  });
+};
+
 module.exports = {
   kakao_login,
   kakao_logout,
@@ -260,4 +319,6 @@ module.exports = {
   google_login,
   google_check,
   google_profile,
+  google_logout,
+  accounts_info,
 };
