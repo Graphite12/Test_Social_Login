@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>게시글 작성</title>
+  </head>
+  <body>
+    <h1>글 리스트</h1>
+    <table border="1">
+      <colgroup>
+        <col width="50" />
+        <col width="200" />
+        <col width="100" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>제목</th>
+          <th>내용</th>
+          <th>작성자</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for(i=0; i < list.length; i++) { %>
+        <tr>
+          <td><%=i+1 %></td>
+          <td><%=list[i].title %></td>
+          <td><%=list[i].username %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table border='1'>
+    <button type="button" onclick='location.href="../write"'>글 쓰기</button>
+  </body>
+</html>

@@ -1,7 +1,6 @@
 const { default: axios } = require('axios');
 const qs = require('qs');
 const { OAuth2Client } = require('google-auth-library');
-const { use } = require('../routers');
 require('dotenv').config();
 
 /**
@@ -29,14 +28,15 @@ const google_info = {
 
 /* 카카오 인증 확인 */
 let kakao_check = (req, res) => {
-  const kakao_url = `https://kauth.kakao.com/oauth/authorize?client_id=${kakao_info.clientID}&redirect_uri=${kakao_info.redirect_url}&response_type=code&scope=profile_nickname,profile_image,account_email`;
+  const kakao_url = `https://kauth.kakao.com/oauth/authorize?client_id=${kakao_info.clientID}&redirect_uri=${kakao_info.redirect_url}&response_type=code&scope=profile_nickname,profile_image,account_email&state=textalive`;
   res.status(302).redirect(kakao_url);
 };
 
 //카카오 리디렉트 주소를 설정 후, get으로 인증 주소를 가져온다.
 let kakao_login = async (req, res) => {
   let token;
-
+  const { code } = req.query;
+  console.log(req.query);
   try {
     //axios를 쓰면 Promise보다 편리해짐.
     token = await axios({
@@ -45,6 +45,8 @@ let kakao_login = async (req, res) => {
       headers: {
         //요청헤더
         'content-type': 'application/x-www-form-urlencoded',
+        'Cache-Control': 'no-store',
+        Pragma: 'no-cache',
       },
       data: qs.stringify({
         //req.data에 queryString으로 데이터를 보냄
@@ -52,16 +54,17 @@ let kakao_login = async (req, res) => {
         client_id: kakao_info.clientID,
         client_secret: kakao_info.client_secret,
         redirect_uri: kakao_info.redirect_url,
-        code: req.query.code,
+        code: code,
       }),
     });
   } catch (error) {
     console.log(error.message);
     res.json(error);
   }
+  console.log(token);
 
   req.session.auth_token = { ['kakao_acc_tkn']: token.data.access_token };
-  console.log(req.session.auth_token.kakao_acc_tkn);
+  // console.log(req.session.auth_token.kakao_acc_tkn);
   //로컬 스토리지 비슷한 기능을 store라이브러리를 통해 사용가능
   // store.set('testKkoTk', testKkoTk);
 
@@ -69,7 +72,7 @@ let kakao_login = async (req, res) => {
   let user;
   // let usertkn = store.get('testKkoTk');
   try {
-    const acctkn = req.session.auth_data.kakao_acc_tkn;
+    const acctkn = req.session.auth_token.kakao_acc_tkn;
     user = await axios({
       method: 'GET',
       url: 'https://kapi.kakao.com/v2/user/me',
@@ -221,7 +224,8 @@ let google_login = async (req, res) => {
         code: code,
       }),
     });
-    console.log('구글토큰:' + token.data.access_token);
+    console.log(`토큰:` + token);
+    // console.log('구글토큰:' + token.data.access_token);
 
     req.session.auth_token = { ['google_acc_tkn']: token.data.access_token };
     console.log('세션:' + req.session.auth_token.google_acc_tkn);
@@ -299,6 +303,10 @@ let accounts_info = (req, res) => {
       break;
 
     case 'kakao':
+      accounts_info = {
+        picture: auth_data[userinfo],
+        name: auth_data[userinfo],
+      };
       break;
 
     default:
