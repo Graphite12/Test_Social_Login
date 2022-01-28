@@ -9,11 +9,20 @@ const cors = require('cors');
 const fs = require('fs');
 const session = require('express-session');
 const express = require('express');
+//라우터
 const main = require('./routers/index');
 const social = require('./routers/social');
+const post = require('./routers/post');
+
+//db 옵션 가져오기
+const db_config = require('./config/db.mysql.js');
+const conn = db_config.init;
 require('dotenv').config();
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+//msyql과 연결
+db_config.connect(conn);
 
 //html을 렌더링하기 위한 부품, pug, ejs
 app.set('view engine', 'ejs');
@@ -67,7 +76,7 @@ app.use(
 /* Router */
 app.use(main);
 app.use('/oauth/', social);
-// app.use()
+app.use('/post/', post);
 //Openssl을 이용한 인증서
 const sslOption = {
   key: fs.readFileSync('./lh.key'),
