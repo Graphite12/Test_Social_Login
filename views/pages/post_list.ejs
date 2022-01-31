@@ -13,21 +13,21 @@
       </colgroup>
       <thead>
         <tr>
+          <th>ID</th>
           <th>제목</th>
-          <th>내용</th>
           <th>작성자</th>
         </tr>
       </thead>
       <tbody>
-        <% for(i=0; i < list.length; i++) { %>
+        <% for(i=0; i < lists.length; i++) { %>
         <tr>
           <td><%=i+1 %></td>
-          <td><%=list[i].title %></td>
-          <td><%=list[i].username %></td>
+          <td><%=lists[i].title %></td>
+          <td><%=lists[i].username %></td>
         </tr>
         <% } %>
       </tbody>
     </table border='1'>
-    <button type="button" onclick='location.href="../write"'>글 쓰기</button>
+    <button type="button" onclick='location.href="../post/write"'>글 쓰기</button>
   </body>
 </html>
