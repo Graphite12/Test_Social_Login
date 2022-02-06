@@ -36,7 +36,7 @@ let kakao_check = (req, res) => {
 let kakao_login = async (req, res) => {
   let token;
   const { code } = req.query;
-  console.log(req.query);
+  console.log(code);
   try {
     //axios를 쓰면 Promise보다 편리해짐.
     token = await axios({
@@ -61,7 +61,7 @@ let kakao_login = async (req, res) => {
     console.log(error.message);
     res.json(error);
   }
-  console.log(token);
+  console.log(token.data);
 
   req.session.auth_token = { ['kakao_acc_tkn']: token.data.access_token };
   // console.log(req.session.auth_token.kakao_acc_tkn);
@@ -85,10 +85,6 @@ let kakao_login = async (req, res) => {
 
     //유저 데이터를 임시로 저장(세션으로저장)
     req.session.auth_data = { ['kakaos']: user.data };
-    // req.session.auth_login = user.data;
-    // store.set('kakao_data', user.data);
-
-    // res.status(200).json(user.data);
   } catch (error) {
     console.log(error.message);
     res.json(error);
@@ -100,7 +96,7 @@ let kakao_login = async (req, res) => {
 /* 카카오 프로필 */
 let kakao_profile = (req, res) => {
   let { nickname, profile_image } = req.session.auth_data.kakaos.properties;
-  //store.get('kakao_data').properties;
+
   console.log(nickname, profile_image);
   res.render('account_profile', {
     nickname,
@@ -110,35 +106,36 @@ let kakao_profile = (req, res) => {
 
 /* 카카오 로그아웃 */
 let kakao_logout = async (req, res) => {
-  const { acc_tkn } = req.session.auth_token;
-  console.log(req.session.auth_data);
+  const { kakao_acc_tkn } = req.session.auth_token;
+  console.log(kakao_acc_tkn);
   try {
     await axios({
       method: 'POST',
       url: `https://kapi.kakao.com/v1/user/logout`,
       headers: {
-        Authorization: `Bearer ${acc_tkn}`,
+        Authorization: `Bearer ${kakao_acc_tkn}`,
       },
     });
   } catch (error) {
     res.json(error);
   }
 
-  if (acc_tkn) {
+  if (kakao_acc_tkn) {
     //delete req.session.acc_tkn;
     req.session.destroy(() => {
       res.redirect('/');
     });
   } else {
-    alert('이미 로그아웃을 하셨습니다.');
+    res.json('로그아웃');
   }
 };
 
 /* 카카오 인증 연결 끊기 */
 let kakao_unlink = async (req, res) => {
-  const { acc_tkn } = req.session.auth_token;
+  const { kakao_acc_tkn } = req.session.auth_token;
   const { kakaos } = req.session.auth_data;
   //카카오 API에게 삭제 요청 결과를 담아준다.
+  console.log(kakaos);
   let del_id;
 
   try {
@@ -146,11 +143,9 @@ let kakao_unlink = async (req, res) => {
       method: 'POST',
       url: `https://kapi.kakao.com/v1/user/unlink`,
       headers: {
-        Authorization: `Bearer ${acc_tkn}`,
+        Authorization: `Bearer ${kakao_acc_tkn}`,
       },
     });
-
-    console.log(del_id);
   } catch (error) {
     res.json(error);
   }
@@ -167,9 +162,6 @@ let kakao_unlink = async (req, res) => {
       res.redirect('/');
     });
   }
-
-  // console.log('삭제', req.session);
-  // res.status(302).redirect('/');
 };
 
 /**
@@ -302,10 +294,10 @@ let accounts_info = (req, res) => {
       };
       break;
 
-    case 'kakao':
+    case 'kakaos':
       accounts_info = {
-        picture: auth_data[userinfo],
-        name: auth_data[userinfo],
+        picture: auth_data[userinfo].properties.profile_image,
+        name: auth_data[userinfo].properties.nickname,
       };
       break;
 

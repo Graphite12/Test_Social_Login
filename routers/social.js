@@ -12,7 +12,7 @@ const {
   google_profile,
   google_logout,
   accounts_info,
-} = require('../controllers/Oauth.social.login');
+} = require('./controllers/Oauth.social.login');
 
 /* 카카오 라우터 */
 router.get('/kakao', kakao_check);

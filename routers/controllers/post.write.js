@@ -1,4 +1,4 @@
-const db_config = require('../config/db.mysql');
+const db_config = require('../../config/db.mysql');
 const conn = db_config.init();
 
 db_config.connect(conn);
