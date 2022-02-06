@@ -3,8 +3,11 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   // res.send("Root")
-  console.log(req.session);
-  res.render('index');
+  const { msg } = req.query;
+  res.render('index', {
+    msg,
+    userinfo: req.session.auth_data,
+  });
 });
 
 module.exports = router;

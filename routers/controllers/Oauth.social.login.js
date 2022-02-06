@@ -240,7 +240,6 @@ let google_login = async (req, res) => {
 
     req.session.auth_data = { ['google']: user.data };
     console.log(req.session.auth_data);
-
     res.redirect('/');
   } catch (error) {
     res.json(error);
@@ -259,6 +258,7 @@ let google_profile = (req, res) => {
   });
 };
 
+//구글 로그아웃
 let google_logout = async (req, res) => {
   const token = req.session.auth_token.google_acc_tkn;
   console.log('로그아웃 토큰' + token);
@@ -288,14 +288,14 @@ let accounts_info = (req, res) => {
 
   switch (userinfo) {
     case 'google':
-      accounts_info = {
+      account_info = {
         picture: auth_data[userinfo].picture,
         name: auth_data[userinfo].name,
       };
       break;
 
     case 'kakaos':
-      accounts_info = {
+      account_info = {
         picture: auth_data[userinfo].properties.profile_image,
         name: auth_data[userinfo].properties.nickname,
       };
@@ -306,8 +306,31 @@ let accounts_info = (req, res) => {
   }
 
   res.render('account_profile', {
-    accounts_info,
+    sucess: account_info,
   });
+};
+
+/**
+ * 로그아웃 공통
+ */
+let social_logout = (req, res) => {
+  const { auth_data } = req.session;
+  const userinfo = Object.keys(auth_data)[0];
+  console.log(userinfo);
+  console.log(auth_data[userinfo]);
+
+  switch (userinfo) {
+    case 'google':
+      res.redirect('/oauth/google/logout');
+      break;
+
+    case 'kakaos':
+      res.redirect('/oauth/kakao/unlink');
+      break;
+
+    default:
+      break;
+  }
 };
 
 module.exports = {
@@ -321,4 +344,5 @@ module.exports = {
   google_profile,
   google_logout,
   accounts_info,
+  social_logout,
 };
