@@ -10,25 +10,44 @@
   </head>
   <body>
     <!-- 카카오 로그인 -->
+
     <div>
-      <H1>카카오 로그인</H1>
+      <H1>BASE 카카오 로그인</H1>
       <!-- {% if %} -->
       <a href="/oauth/kakao">카카오 로그인</a>
       <a href="/oauth/kakao/logout">로그아웃</a>
       <a href="/oauth/kakao/unlink">인증 삭제</a>
     </div>
     <div>
-      <H1>구글 로그인</H1>
+      <H1>BASE 구글 로그인</H1>
       <a href="/oauth/google">구글 로그인</a>
       <a href="/oauth/google/logout">구글 로그아웃</a>
       <script src="https://accounts.google.com/gsi/client" async defer></script>
     </div>
     <div>
-      <H1>프로필 보기</H1>
-      <a href="/oauth/login/user_info">프로필</a>
+      <h1>공통프로필</h1>
+      <a href="/oauth/social/user_info">사용자 프로필</a>
+      <a href="/oauth/social/logout"> 공통 로그아웃 </a>
     </div>
+    <section>
+      <article>
+        <div>
+          <% if(!locals.userinfo) { %>
+          <H1>소셜 로그인</H1>
+          <a href="/oauth/kakao">카카오 로그인</a>
+          <a href="/oauth/google">구글 로그인</a>
+          <% } else { %>
+          <H1>프로필 보기</H1>
+          <a href="/oauth/social/user_info">프로필</a>
+          <a href="/oauth/social/logout">로그아웃</a>
+          <% } %>
+        </div>
+        <%= console.log(locals) %>
+      </article>
+    </section>
+
     <div>
-      <H1>게시글</H1>
+      <H1>게시글</H1
       <a href="/post/list">게시글 리스트</a>
       <a href="/post/write">글 작성하기</a>
     </div>

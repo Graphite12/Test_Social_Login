@@ -12,6 +12,7 @@ const {
   google_profile,
   google_logout,
   accounts_info,
+  social_logout,
 } = require('./controllers/Oauth.social.login');
 
 /* 카카오 라우터 */
@@ -28,5 +29,6 @@ router.get('/google/account_info', authentication, google_profile);
 router.get('/google/logout', authentication, google_logout);
 
 /* 공통, 소셜 로그인 유저 정보 불러오기 */
-router.get('/login/user_info', authentication, accounts_info);
+router.get('/social/user_info', authentication, accounts_info);
+router.get('/social/logout', authentication, social_logout);
 module.exports = router;
