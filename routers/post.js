@@ -1,9 +1,5 @@
 const express = require('express');
-const {
-  get_list,
-  get_posts,
-  post_write,
-} = require('../controllers/post.write');
+const { get_list, get_posts, post_write } = require('./controllers/post.write');
 const router = express.Router();
 
 /* 글 쓰기 */
